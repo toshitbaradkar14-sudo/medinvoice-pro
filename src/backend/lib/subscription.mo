@@ -1,0 +1,2 @@
+// Subscription module removed.
+module {};

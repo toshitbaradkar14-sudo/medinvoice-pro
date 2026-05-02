@@ -1,0 +1,240 @@
+type UserRole = 
+ variant {
+   admin;
+   guest;
+   user;
+ };
+type UserId = principal;
+type UpdateInvoiceArgs = 
+ record {
+   dueDate: Timestamp;
+   gstEnabled: bool;
+   gstPercentage: opt nat;
+   id: InvoiceId;
+   issueDate: Timestamp;
+   patientName: text;
+   services: vec ServiceItem;
+   status: InvoiceStatus;
+ };
+type Timestamp = int;
+type TenantStatus = 
+ variant {
+   active;
+   expired;
+   pending;
+   rejected;
+   suspended;
+   trial;
+ };
+type ServiceItem = 
+ record {
+   name: text;
+   quantity: nat;
+   unitPrice: nat;
+ };
+type SavePracticeSettingsArgs = 
+ record {
+   address: text;
+   practiceName: text;
+ };
+type PracticeSettingsView = 
+ record {
+   address: text;
+   owner: UserId;
+   practiceName: text;
+   updatedAt: Timestamp;
+ };
+type InvoiceView = 
+ record {
+   createdAt: Timestamp;
+   dueDate: Timestamp;
+   gstAmount: nat;
+   gstEnabled: bool;
+   gstPercentage: opt nat;
+   id: InvoiceId;
+   issueDate: Timestamp;
+   owner: UserId;
+   patientName: text;
+   services: vec ServiceItem;
+   status: InvoiceStatus;
+   total: nat;
+   updatedAt: Timestamp;
+ };
+type InvoiceStatus = 
+ variant {
+   cancelled;
+   draft;
+   paid;
+   sent;
+ };
+type InvoiceId = nat;
+type InvoiceFilter = 
+ record {
+   fromDate: opt Timestamp;
+   patientName: opt text;
+   toDate: opt Timestamp;
+ };
+type CreateInvoiceArgs = 
+ record {
+   dueDate: Timestamp;
+   gstEnabled: bool;
+   gstPercentage: opt nat;
+   issueDate: Timestamp;
+   patientName: text;
+   services: vec ServiceItem;
+ };
+type AdminTenantView = 
+ record {
+   approvalCode: text;
+   cashPaidAt: opt Timestamp;
+   cashPaidNote: text;
+   createdAt: Timestamp;
+   id: UserId;
+   phone: text;
+   shopName: text;
+   subscriptionExpiresAt: opt Timestamp;
+   subscriptionStatus: TenantStatus;
+   trialEndsAt: Timestamp;
+ };
+type ActivationSlotView = 
+ record {
+   claimed: bool;
+   code: text;
+   phone: text;
+ };
+service : {
+  _initializeAccessControl: () -> ();
+  activateWithCode: (phone: text, code: text, shopName: text) ->
+   (variant {
+      err: text;
+      ok: AdminTenantView;
+    });
+  adminApprove: (tenantId: UserId) ->
+   (variant {
+      err: text;
+      ok: AdminTenantView;
+    });
+  adminClearAllTenants: () -> (variant {
+                                 err: text;
+                                 ok;
+                               });
+  adminCreateActivationSlot: (phone: text, code: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  adminDeleteTenant: (tenantId: UserId) -> (variant {
+                                              err: text;
+                                              ok;
+                                            });
+  adminExtendTenantExpiry: (tenantId: UserId, newExpiresAt: Timestamp) ->
+   (variant {
+      err: text;
+      ok: AdminTenantView;
+    });
+  adminGenerateCode: (phone: text) -> (variant {
+                                         err: text;
+                                         ok: text;
+                                       });
+  adminGetAllStats: () ->
+   (record {
+      activeTenants: nat;
+      expiredTenants: nat;
+      pendingTenants: nat;
+      rejectedTenants: nat;
+      suspendedTenants: nat;
+      totalTenants: nat;
+      trialTenants: nat;
+    }) query;
+  adminGetTenant: (tenantId: UserId) -> (opt AdminTenantView) query;
+  adminListSlots: () -> (vec ActivationSlotView) query;
+  adminListTenants: (search: opt text) -> (vec AdminTenantView) query;
+  adminMarkCashPaid: (tenantId: UserId, note: text) ->
+   (variant {
+      err: text;
+      ok: AdminTenantView;
+    });
+  adminReactivate: (tenantId: UserId) ->
+   (variant {
+      err: text;
+      ok: AdminTenantView;
+    });
+  adminReject: (tenantId: UserId) ->
+   (variant {
+      err: text;
+      ok: AdminTenantView;
+    });
+  adminResetCode: (phone: text) -> (variant {
+                                      err: text;
+                                      ok: text;
+                                    });
+  adminSetTenantStatus: (tenantId: UserId, status: TenantStatus) ->
+   (variant {
+      err: text;
+      ok: AdminTenantView;
+    });
+  adminSuspend: (tenantId: UserId) ->
+   (variant {
+      err: text;
+      ok: AdminTenantView;
+    });
+  adminSuspendAndInvalidate: (tenantId: UserId) ->
+   (variant {
+      err: text;
+      ok: AdminTenantView;
+    });
+  adminToggleSubscription: (tenantId: UserId) ->
+   (variant {
+      err: text;
+      ok: AdminTenantView;
+    });
+  approveTenant: (tenantId: UserId) ->
+   (variant {
+      err: text;
+      ok: AdminTenantView;
+    });
+  assignCallerUserRole: (user: principal, role: UserRole) -> ();
+  createInvoice: (args: CreateInvoiceArgs) -> (InvoiceView);
+  deleteAllInvoices: () -> (variant {
+                              err: text;
+                              ok;
+                            });
+  deleteInvoice: (id: InvoiceId) -> ();
+  getCallerPracticeSettings: () -> (opt PracticeSettingsView) query;
+  getCallerTenantStatus: () -> (opt TenantStatus) query;
+  getCallerUserRole: () -> (UserRole) query;
+  getInvoice: (id: InvoiceId) -> (opt InvoiceView) query;
+  getInvoiceStatusBreakdown: () ->
+   (record {
+      cancelled: nat;
+      draft: nat;
+      paid: nat;
+      sent: nat;
+    }) query;
+  getInvoiceTotalCount: () -> (nat) query;
+  getPracticeSettings: (owner: UserId) -> (opt PracticeSettingsView) query;
+  getRevenueByMonth: () -> (vec record {
+                                  text;
+                                  nat;
+                                }) query;
+  isCallerAdmin: () -> (bool) query;
+  isCallerAdminPhone: () -> (bool) query;
+  listInvoices: (filter: InvoiceFilter) -> (vec InvoiceView) query;
+  registerTenant: (shopName: text, phone: text) ->
+   (variant {
+      err: text;
+      ok: AdminTenantView;
+    });
+  rejectTenant: (tenantId: UserId) ->
+   (variant {
+      err: text;
+      ok: AdminTenantView;
+    });
+  savePracticeSettings: (args: SavePracticeSettingsArgs) -> ();
+  updateInvoice: (args: UpdateInvoiceArgs) -> ();
+  verifyAndApproveTenant: (tenantId: UserId, code: text) ->
+   (variant {
+      err: text;
+      ok: AdminTenantView;
+    });
+}

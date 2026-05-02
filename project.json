@@ -1,0 +1,22 @@
+{
+  "overview": "A medical invoicing platform for healthcare practice owners to create, manage, and digitally print professional invoices. Features two subscription tiers — Developer (admin) and User (standard) — with role-based access, invoice CRUD, PDF generation, and a developer dashboard with analytics.",
+  "features": [
+    "Invoice creation with patient details, services, and amounts",
+    "PDF preview, download, and print functionality",
+    "Developer and User subscription tiers with role-based access",
+    "Invoice list with search, sort, and filter",
+    "Developer dashboard with analytics and user management",
+    "Practice branding settings (name, address, logo)",
+    "Subscription management and upgrade flow"
+  ],
+  "category": "productivity",
+  "tags": [
+    "medical",
+    "invoicing",
+    "healthcare",
+    "pdf",
+    "subscription",
+    "admin"
+  ],
+  "last_updated": "2026-04-14T10:05:48.260Z"
+}
